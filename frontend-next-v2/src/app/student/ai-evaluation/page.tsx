@@ -103,9 +103,30 @@ export default function AIEvaluationPage() {
           setAiProfile(res.profile);
           setAiQuestions(res.questions);
           setView(res.completed ? "results" : "profile");
+        } else {
+          // No evaluation exists, check if CV was uploaded during onboarding
+          fetchApi<any>("/students/cv/status")
+            .then((cvStatus) => {
+              if (cvStatus.exists) {
+                // CV exists but no evaluation - show upload screen
+                // User can re-upload or we could auto-generate (not implemented yet)
+                setView("upload");
+              } else {
+                // No CV, show upload screen
+                setView("upload");
+              }
+            })
+            .catch(() => {
+              // Can't check CV status, show upload screen
+              setView("upload");
+            });
         }
       })
-      .catch((e) => console.log("No previous evaluation", e.message));
+      .catch((e) => {
+        console.log("No previous evaluation", e.message);
+        // Show upload screen
+        setView("upload");
+      });
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

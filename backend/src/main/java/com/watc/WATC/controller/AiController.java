@@ -148,4 +148,25 @@ public class AiController {
             return ResponseEntity.internalServerError().body(Map.of("error", "Evaluation failed: " + e.getMessage()));
         }
     }
+
+    @PostMapping(value = "/evaluation/generate-quiz-from-existing", produces = "application/json")
+    public ResponseEntity<?> generateQuizFromExistingCV() {
+        User user = getCurrentUser();
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+
+        try {
+            // Check if user has uploaded CV
+            // This would require StudentCVRepository - for now, return error
+            // In a full implementation, retrieve the CV file and pass to aiEvaluationService
+            
+            return ResponseEntity.status(501).body(Map.of(
+                "error", "This endpoint requires CV file retrieval implementation",
+                "message", "Please upload CV again or use the /evaluation/generate-quiz endpoint"
+            ));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Evaluation failed: " + e.getMessage()));
+        }
+    }
 }

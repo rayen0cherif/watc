@@ -6,6 +6,7 @@ import { Upload, FileText, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { StepActions } from "@/components/onboarding/step-actions";
 import { cn } from "@/lib/cn";
+import { uploadFileApi } from "@/lib/api";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -41,8 +42,22 @@ export default function CvStepPage() {
     e.preventDefault();
     if (!file) return;
     setSubmitting(true);
-    // TODO(backend): POST /api/students/cv (multipart)
-    router.push("/onboarding/pfe");
+    
+    // Upload CV to backend
+    const formData = new FormData();
+    formData.append("cv", file);
+    formData.append("projectInfo", "Onboarding CV upload");
+    
+    uploadFileApi<any>("/students/cv", formData)
+      .then(() => {
+        // CV uploaded successfully, proceed to next step
+        router.push("/onboarding/pfe");
+      })
+      .catch((error) => {
+        console.error("Failed to upload CV:", error);
+        setError("Erreur lors du téléversement du CV. Veuillez réessayer.");
+        setSubmitting(false);
+      });
   }
 
   return (

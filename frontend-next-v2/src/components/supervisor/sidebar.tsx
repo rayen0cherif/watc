@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -13,7 +14,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Logo } from "@/components/layout/logo";
-import { SUPERVISOR_PROFILE } from "@/lib/supervisor-mock";
 
 const NAV = [
   { href: "/supervisor/dashboard", label: "Vue d'ensemble", icon: LayoutGrid },
@@ -25,6 +25,24 @@ const NAV = [
 
 export function SupervisorSidebar() {
   const pathname = usePathname();
+  const [profile, setProfile] = useState({ name: "", role: "", initials: "" });
+
+  useEffect(() => {
+    // Get user profile from local storage
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setProfile({
+          name: user.fullName || "",
+          role: user.role === "ACADEMIC_MENTOR" ? "Encadrant — ENSI" : "Encadrant",
+          initials: user.initials || user.fullName?.split(" ").map((n: string) => n[0]).join("") || "?",
+        });
+      } catch (e) {
+        console.error("Failed to parse user data", e);
+      }
+    }
+  }, []);
 
   return (
     <aside className="fixed inset-y-0 left-0 flex w-60 flex-col border-r border-neutral-200 bg-white">
@@ -88,14 +106,14 @@ export function SupervisorSidebar() {
       <div className="border-t border-neutral-200 p-4">
         <div className="flex items-center gap-3 rounded-lg p-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-500 text-sm font-semibold text-white">
-            {SUPERVISOR_PROFILE.initials}
+            {profile.initials}
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-neutral-900">
-              {SUPERVISOR_PROFILE.name}
+              {profile.name}
             </p>
             <p className="truncate text-sm text-neutral-500">
-              {SUPERVISOR_PROFILE.role}
+              {profile.role}
             </p>
           </div>
         </div>

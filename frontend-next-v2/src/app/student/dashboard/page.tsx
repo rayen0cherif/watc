@@ -109,20 +109,30 @@ export default function StudentDashboardPage() {
         return fetchApi<any[]>(`/projects/${proj.id}/journal`).catch(() => []);
       })
       .then((j) => setJournals(j))
-      .catch(() => {
+      .catch((error) => {
+        console.error("Failed to load project:", error);
+        
+        // Create a fallback project if user exists but has no project
         if (localUser) {
           const fallback: ProjectData = {
             id: 0,
-            title: "Plateforme de mentorat académique",
-            description: "Dashboard de suivi MVP",
-            startDate: "2025-01-01",
-            deadline: "2026-06-15",
+            title: "Projet en attente de création",
+            description: "Veuillez contacter votre encadrant pour créer votre projet",
+            startDate: new Date().toISOString().split('T')[0],
+            deadline: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             defenseDate: null,
             companyName: localUser.companyName || null,
             companyAddress: null,
-            progress: 15,
+            progress: 0,
             aiScore: 0,
-            student: { id: 0, fullName: localUser.fullName, email: localUser.email, role: localUser.role, department: localUser.department || "GL", initials: localUser.initials },
+            student: { 
+              id: localUser.id || 0, 
+              fullName: localUser.fullName, 
+              email: localUser.email, 
+              role: localUser.role, 
+              department: localUser.department || "GL", 
+              initials: localUser.initials 
+            },
           };
           setProject(fallback);
           setMilestones(computeMilestones(fallback));
@@ -175,20 +185,49 @@ export default function StudentDashboardPage() {
   };
 
   const handleSubmitJournal = async () => {
-    if (!journalContent.trim() || !project?.id) return;
+    console.log("handleSubmitJournal called");
+    console.log("journalContent:", journalContent);
+    console.log("project?.id:", project?.id);
+    
+    if (!journalContent.trim()) {
+      console.error("Journal content is empty");
+      alert("Veuillez remplir le champ 'Travail réalisé'");
+      return;
+    }
+    
+    if (!project?.id || project.id === 0) {
+      console.error("No valid project ID");
+      alert("Erreur: Vous n'avez pas encore de projet assigné. Veuillez contacter votre encadrant ou vous connecter avec un compte étudiant valide (ex: sami@watc.tn / password123)");
+      return;
+    }
+    
     setSubmittingJournal(true);
+    console.log("Submitting journal update...");
+    
     try {
+      const payload = { 
+        content: journalContent, 
+        blocks: journalBlocks, 
+        nextSteps: journalNext, 
+        updateDate: new Date().toISOString().split('T')[0] // Format: YYYY-MM-DD
+      };
+      console.log("Payload:", payload);
+      
       const entry = await fetchApi<any>(`/projects/${project.id}/journal`, {
         method: "POST",
-        body: JSON.stringify({ content: journalContent, blocks: journalBlocks, nextSteps: journalNext, updateDate: new Date().toLocaleDateString("fr-FR") }),
+        body: JSON.stringify(payload),
       });
+      
+      console.log("Journal update created:", entry);
       setJournals((prev) => [entry, ...prev]);
       setJournalContent("");
       setJournalBlocks("");
       setJournalNext("");
       setShowUpdateModal(false);
-    } catch {
-      setShowUpdateModal(false);
+      alert("Mise à jour ajoutée avec succès!");
+    } catch (error: any) {
+      console.error("Failed to submit journal update:", error);
+      alert(`Erreur lors de l'ajout de la mise à jour: ${error.message || 'Erreur inconnue'}`);
     } finally {
       setSubmittingJournal(false);
     }
@@ -425,7 +464,14 @@ export default function StudentDashboardPage() {
               </div>
               <div className="mt-6 flex justify-end gap-3">
                 <Button variant="ghost" onClick={() => setShowUpdateModal(false)} disabled={submittingJournal}>Annuler</Button>
-                <Button variant="primary" onClick={handleSubmitJournal} disabled={submittingJournal || !journalContent.trim()}>
+                <Button 
+                  variant="primary" 
+                  onClick={() => {
+                    console.log("Submit button clicked!");
+                    handleSubmitJournal();
+                  }} 
+                  disabled={submittingJournal || !journalContent.trim()}
+                >
                   {submittingJournal ? <Loader2 className="h-4 w-4 animate-spin" /> : "Soumettre"}
                 </Button>
               </div>

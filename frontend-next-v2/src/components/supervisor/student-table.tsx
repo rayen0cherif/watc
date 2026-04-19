@@ -18,7 +18,7 @@ import {
   STATUS_LABEL,
   type StudentStatus,
   type SupervisorStudent,
-} from "@/lib/supervisor-mock";
+} from "@/types/supervisor";
 import { cn } from "@/lib/cn";
 
 type FilterValue = "tous" | StudentStatus;
