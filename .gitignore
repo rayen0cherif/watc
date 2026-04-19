@@ -1,6 +1,7 @@
 # Ignore all folders starting with "."
 .*
 !.gitignore
+!.dockerignore
 
 # Node modules
 **/node_modules/
