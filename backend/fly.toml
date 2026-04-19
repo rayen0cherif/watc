@@ -5,6 +5,7 @@ app = "watc-backend"
 primary_region = "cdg"  # Paris region, change if needed
 
 [build]
+  dockerfile = "Dockerfile"
   [build.args]
     MAVEN_VERSION = "3.9.6"
 
