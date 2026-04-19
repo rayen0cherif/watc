@@ -1,0 +1,17 @@
+import * as React from "react";
+import { cn } from "@/lib/cn";
+
+export const Label = React.forwardRef<
+  HTMLLabelElement,
+  React.LabelHTMLAttributes<HTMLLabelElement> & { required?: boolean }
+>(({ className, required, children, ...props }, ref) => (
+  <label
+    ref={ref}
+    className={cn("text-sm font-medium text-neutral-900", className)}
+    {...props}
+  >
+    {children}
+    {required && <span className="ml-1 text-danger-500">*</span>}
+  </label>
+));
+Label.displayName = "Label";
